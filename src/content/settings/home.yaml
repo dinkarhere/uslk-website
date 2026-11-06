@@ -1,0 +1,62 @@
+hero:
+  title: Sustainable Rural Development at Scale
+  subtitle: >-
+    Partnering for lasting impact: large-scale water infrastructure, community
+    empowerment and strategic CSR alignment.
+  ctaLabel: Donate Now
+focus:
+  title: Our Focus
+  text: >-
+    At USLK Foundation we specialize in driving meaningful change in rural India
+    through infrastructure that matters.
+  items:
+    - icon: water
+      title: Support Water Conservation
+      text: >-
+        Your contribution helps us build bandharas, deepen canals and rivers, and
+        secure long-term water availability for farming communities. Every
+        contribution creates lasting impact.
+    - icon: community
+      title: Join Our Community Efforts
+      text: >-
+        Be part of ground-level change. Support and participate in our rural
+        development projects—water management, plantation drives, education
+        initiatives, and climate-action programs.
+    - icon: sustainability
+      title: Contribute to Rural Sustainability
+      text: >-
+        Help us restore natural resources, strengthen local infrastructure, and
+        empower villages toward climate-resilient growth. Every effort counts
+        toward building a sustainable future.
+projects:
+  title: Recent Projects
+  text: >-
+    Support essential causes like healthcare, education, hunger relief, and
+    empowering vulnerable communities. Together, we can create lasting change!
+news:
+  title: Top news summarized briefly
+  text: >-
+    Join us at local events to make a difference! Connect, volunteer, and support
+    our mission in your community.
+donate:
+  title: Help Restore Water for Rural Communities
+  text: >-
+    Critical water scarcity is impacting farmers and livelihoods. Your
+    contribution enables essential water-conservation projects — from rainwater
+    harvesting to canal deepening — creating immediate and long-term impact.
+  ctaLabel: Contribute Today
+stats:
+  title: Numbers speaks
+  items:
+    - value: 99
+      suffix: +
+      label: Villages Covered
+    - value: 5
+      suffix: +
+      label: Dumpers
+    - value: 160
+      suffix: k+
+      label: People Benefitted
+    - value: 100
+      suffix: '%'
+      label: Silt removed
