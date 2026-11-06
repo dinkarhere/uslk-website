@@ -1,0 +1,9 @@
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - workerd
+
+overrides:
+  # @astrojs/check's peer resolution picks a 2.0 beta that is ABI-incompatible
+  # with @emnapi/core 1.x and crashes `astro check`. Pin to the stable line.
+  "@emnapi/runtime": 1.11.3
