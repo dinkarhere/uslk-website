@@ -1,0 +1,61 @@
+---
+import { Image } from "astro:assets";
+import Icon from "./Icon.astro";
+import { formatDate, postUrl, type Post } from "@/lib/content";
+
+/**
+ * `teaser` (home page): image with date badge, title, excerpt.
+ * `list` (blog page): horizontal image + date, title, "Read More".
+ */
+interface Props {
+  post: Post;
+  variant?: "teaser" | "list";
+}
+
+const { post, variant = "teaser" } = Astro.props;
+const { data } = post;
+const iso = data.date.toISOString();
+const label = formatDate(data.date);
+---
+
+<article class:list={["post", `post--${variant}`]}>
+  <a href={postUrl(post)} class="post__link">
+    <div class="post__media zoom">
+      <Image src={data.image} alt={data.imageAlt} widths={[400, 760]} sizes="(max-width: 809px) 100vw, 380px" />
+      {variant === "teaser" && <span class="post__badge"><time datetime={iso}>{label}</time></span>}
+    </div>
+    <div class="post__body">
+      {variant === "list" && <p class="post__date"><time datetime={iso}>{label}</time></p>}
+      <h3 class="post__title">{data.title}</h3>
+      {variant === "teaser" && data.excerpt && <p class="post__excerpt">{data.excerpt}</p>}
+      {
+        variant === "list" && (
+          <span class="post__more" aria-hidden="true">
+            Read More <Icon name="arrow-right" size={16} />
+          </span>
+        )
+      }
+    </div>
+  </a>
+</article>
+
+<style>
+  .post__link { display: grid; gap: 30px; color: inherit; }
+  .post__link:hover { color: inherit; }
+  .post__link:hover .post__title { color: var(--color-primary); }
+  .post__media { position: relative; height: 250px; border: 1px solid var(--color-border-subtle); border-radius: var(--radius); }
+  .post__badge { position: absolute; top: 10px; right: 10px; padding: 2px 12px; background: var(--color-white); border-radius: var(--radius); color: var(--color-black); font-size: 14px; line-height: 20px; }
+  .post__body { display: grid; gap: 15px; align-content: start; }
+  .post__title { font-size: var(--h5); line-height: 28px; font-weight: 600; color: var(--color-gray); transition: color 0.2s; }
+  .post__excerpt { line-height: 1.4; }
+
+  .post--list .post__link { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; }
+  .post--list .post__media { height: 180px; }
+  .post--list .post__body { gap: 8px; }
+  .post__more { display: inline-flex; align-items: center; gap: 8px; color: var(--color-primary); }
+
+  @media (max-width: 559px) {
+    .post--list .post__link { grid-template-columns: 1fr; gap: 16px; }
+    .post--list .post__media { height: 220px; }
+  }
+</style>

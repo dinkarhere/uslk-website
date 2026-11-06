@@ -1,0 +1,51 @@
+---
+import { Image } from "astro:assets";
+import { TAG_LABELS, projectUrl, formatDate, type Project } from "@/lib/content";
+
+/**
+ * `teaser` (home page): category, title, "View Project".
+ * `list` (projects page): date and title, with a card shadow.
+ */
+interface Props {
+  project: Project;
+  variant?: "teaser" | "list";
+}
+
+const { project, variant = "teaser" } = Astro.props;
+const { data } = project;
+---
+
+<article class:list={["card", `card--${variant}`]}>
+  <a href={projectUrl(project)} class="card__link">
+    <div class="card__media zoom">
+      <Image src={data.thumbnail} alt={data.thumbnailAlt} widths={[400, 760]} sizes="(max-width: 809px) 100vw, 380px" />
+    </div>
+    <div class="card__body">
+      {
+        variant === "teaser" ? (
+          <p class="card__meta">{TAG_LABELS[data.tag]}</p>
+        ) : (
+          <p class="card__meta">
+            <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
+          </p>
+        )
+      }
+      <h3 class:list={["card__title", variant === "teaser" && "line-clamp-2"]}>{data.title}</h3>
+      {variant === "teaser" && <span class="card__more" aria-hidden="true">View Project &gt;</span>}
+    </div>
+  </a>
+</article>
+
+<style>
+  .card { height: 100%; background: var(--color-white); border-radius: var(--radius); overflow: hidden; }
+  .card--list { box-shadow: var(--shadow-card); }
+  .card__link { display: flex; flex-direction: column; height: 100%; color: inherit; }
+  .card__link:hover { color: inherit; }
+  .card__link:hover .card__title { color: var(--color-primary); }
+  .card__media { height: 250px; border: 1px solid var(--color-border-subtle); border-radius: var(--radius) var(--radius) 0 0; }
+  .card__body { display: grid; gap: 4px; padding: 22px; }
+  .card__meta { font-size: 14px; line-height: 28px; }
+  .card--teaser .card__meta { font-size: 16px; line-height: 1.2; }
+  .card__title { font-size: var(--h5); line-height: 28px; font-weight: 600; color: var(--color-gray); transition: color 0.2s; }
+  .card__more { font-size: 16px; color: var(--color-body); }
+</style>

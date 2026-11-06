@@ -1,0 +1,45 @@
+---
+import type { GetStaticPaths } from "astro";
+import { Image } from "astro:assets";
+import { render } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ArticleShell from "@/components/ArticleShell.astro";
+import Gallery from "@/components/Gallery.astro";
+import { getProjects, type Project } from "@/lib/content";
+
+export const getStaticPaths = (async () => {
+  const projects = await getProjects();
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const { Content } = await render(project);
+const description = (project.body ?? "").replace(/[#*_>\-\[\]()]/g, "").replace(/\s+/g, " ").trim().slice(0, 155);
+---
+
+<BaseLayout title={data.title} description={description} image={data.thumbnail} type="article">
+  <ArticleShell backHref="/projects">
+    <h1>{data.title}</h1>
+    <Image
+      src={data.thumbnail}
+      alt={data.thumbnailAlt}
+      class="article__banner banner"
+      widths={[480, 830, 1660]}
+      sizes="(max-width: 870px) 100vw, 830px"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <div class="prose"><Content /></div>
+    <Gallery images={data.gallery} title={data.title} />
+  </ArticleShell>
+</BaseLayout>
+
+<style>
+  .banner { height: 520px; }
+  @media (max-width: 809px) { .banner { height: 280px; } }
+</style>

@@ -1,0 +1,25 @@
+---
+import Icon from "./Icon.astro";
+
+/** Shared frame for project and blog detail pages (Framer "Go Back" + narrow column). */
+interface Props {
+  backHref: string;
+  width?: "830" | "800";
+}
+const { backHref, width = "830" } = Astro.props;
+---
+
+<article class="container article" style={`--w:${width}px`}>
+  <a class="btn btn--primary btn--sm back" href={backHref}>
+    <Icon name="arrow-left-circle" size={18} />
+    Go Back
+  </a>
+  <slot />
+</article>
+
+<style>
+  .article { max-width: calc(var(--w) + 2 * var(--gutter)); display: grid; gap: 24px; padding-block: 70px; }
+  .back { justify-self: start; padding: 4px 10px; gap: 6px; font-size: 14px; }
+  .article :global(.article__banner) { width: 100%; border-radius: var(--radius); object-fit: cover; }
+  @media (max-width: 809px) { .article { padding-block: 40px 60px; } }
+</style>

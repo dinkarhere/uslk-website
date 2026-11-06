@@ -1,0 +1,169 @@
+---
+import { Image } from "astro:assets";
+import logo from "@/assets/images/site/logo.png";
+import phoneIcon from "@/assets/images/site/icon-phone.svg";
+import Icon from "./Icon.astro";
+import { telHref } from "@/lib/content";
+
+interface Props {
+  email: string;
+  phone: string | undefined;
+  siteName: string;
+}
+
+const { email, phone, siteName } = Astro.props;
+const current = Astro.url.pathname.replace(/\/$/, "") || "/";
+
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/projects", label: "Projects" },
+  { href: "/blog", label: "Blogs" },
+  { href: "/contact", label: "Contact" },
+  { href: "/donate-now", label: "Donate Now" },
+];
+
+const isCurrent = (href: string) => (href === "/" ? current === "/" : current.startsWith(href));
+---
+
+<header class="site-header">
+  <div class="topbar">
+    <nav class="container topbar__inner" aria-label="Main">
+      <ul class="topbar__links" role="list">
+        {
+          links.map((l) => (
+            <li>
+              <a href={l.href} aria-current={isCurrent(l.href) ? "page" : undefined}>
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="topbar__email" href={`mailto:${email}`}>
+        <Icon name="mail" size={22} />
+        <span>{email}</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="brandbar">
+    <div class="container brandbar__inner">
+      <a href="/" class="brandbar__logo" aria-label={`${siteName} — home`}>
+        <Image src={logo} alt="" height={68} loading="eager" />
+      </a>
+
+      <div class="brandbar__contact">
+        {
+          phone && (
+            <a class="call" href={telHref(phone)}>
+              <span class="call__avatar">
+                <Image src={phoneIcon} alt="" width={25} height={25} />
+              </span>
+              <span class="call__text">
+                <span class="call__label">Call us now</span>
+                <span class="call__number">{phone}</span>
+              </span>
+            </a>
+          )
+        }
+        <a class="btn btn--outline" href="/donate-now">Donate Now</a>
+      </div>
+
+      <button
+        class="menu-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        data-menu-toggle
+      >
+        <span class="sr-only">Menu</span>
+        <Icon name="menu" size={26} class="menu-toggle__open" />
+        <Icon name="x" size={26} class="menu-toggle__close" />
+      </button>
+    </div>
+
+    <nav id="mobile-menu" class="mobile-menu" aria-label="Main" hidden>
+      <ul role="list">
+        {
+          links.map((l) => (
+            <li>
+              <a href={l.href} aria-current={isCurrent(l.href) ? "page" : undefined}>
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="mobile-menu__email" href={`mailto:${email}`}>
+        <Icon name="mail" size={20} />
+        {email}
+      </a>
+      {phone && <a class="mobile-menu__email" href={telHref(phone)}><Icon name="phone" size={20} />{phone}</a>}
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+  const menu = document.getElementById("mobile-menu");
+  if (toggle && menu) {
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute("aria-expanded", String(open));
+      menu.hidden = !open;
+    };
+    toggle.addEventListener("click", () => setOpen(toggle.getAttribute("aria-expanded") !== "true"));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !menu.hidden) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+    // Close if the viewport grows past the mobile breakpoint.
+    matchMedia("(min-width: 810px)").addEventListener("change", (e) => e.matches && setOpen(false));
+  }
+</script>
+
+<style>
+  .topbar { background: var(--color-primary); color: var(--color-white); }
+  .topbar__inner { display: flex; align-items: center; gap: 20px; min-height: 64px; padding-block: 20px; }
+  .topbar__links { display: flex; gap: 30px; margin: 0; padding: 0; list-style: none; flex: 1; }
+  .topbar a { color: var(--color-white); font-size: 16px; }
+  .topbar a:hover,
+  .topbar a[aria-current="page"] { text-decoration: underline; text-underline-offset: 4px; }
+  .topbar__email { display: inline-flex; align-items: center; gap: 10px; }
+
+  .brandbar { background: var(--color-white); position: relative; }
+  .brandbar__inner { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-block: 15px; }
+  .brandbar__logo img { height: 68px; width: auto; }
+  .brandbar__contact { display: flex; align-items: center; gap: 24px; }
+
+  .call { display: flex; align-items: center; gap: 12px; color: var(--color-black); }
+  .call__avatar { display: grid; place-items: center; width: 50px; height: 50px; border: 1px solid var(--color-light); border-radius: 50%; }
+  .call__text { display: grid; }
+  .call__label { color: var(--color-body); }
+  .call__number { font-size: 17px; line-height: 24px; font-weight: 500; }
+
+  .menu-toggle { display: none; padding: 8px; border: 0; background: none; color: var(--color-black); cursor: pointer; }
+  .menu-toggle[aria-expanded="true"] .menu-toggle__open,
+  .menu-toggle[aria-expanded="false"] .menu-toggle__close { display: none; }
+
+  .mobile-menu { padding: 8px var(--gutter) 24px; border-top: 1px solid var(--color-light); }
+  .mobile-menu ul { margin: 0; padding: 0; list-style: none; }
+  .mobile-menu li a { display: block; padding: 12px 0; font-size: 18px; color: var(--color-black); border-bottom: 1px solid var(--color-accent); }
+  .mobile-menu li a[aria-current="page"] { color: var(--color-primary); }
+  .mobile-menu__email { display: flex; align-items: center; gap: 10px; margin-top: 16px; color: var(--color-body); }
+
+  @media (max-width: 1023px) {
+    .topbar__email span { display: none; }
+    .call__text { display: none; }
+  }
+
+  @media (max-width: 809px) {
+    .topbar, .brandbar__contact { display: none; }
+    .brandbar__logo img { height: 52px; }
+    .menu-toggle { display: inline-flex; }
+  }
+  @media (min-width: 810px) {
+    .mobile-menu { display: none; }
+  }
+</style>

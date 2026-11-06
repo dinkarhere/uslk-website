@@ -1,0 +1,28 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+export const getStaticPaths = (async () => {
+  const pages = await getCollection("legal", ({ data }) => import.meta.env.DEV || !data.draft);
+  return pages.map((page) => ({ params: { slug: page.id }, props: { page } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  page: CollectionEntry<"legal">;
+}
+
+const { page } = Astro.props;
+const { Content } = await render(page);
+---
+
+<BaseLayout title={page.data.title}>
+  <article class="container container--narrow section">
+    <h1>{page.data.title}</h1>
+    <div class="prose"><Content /></div>
+  </article>
+</BaseLayout>
+
+<style>
+  h1 { margin-bottom: 24px; }
+</style>

@@ -1,0 +1,18 @@
+---
+import { Image } from "astro:assets";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import illustration from "@/assets/images/site/404.svg";
+---
+
+<BaseLayout title="Page not found" noindex>
+  <section class="container notfound">
+    <Image src={illustration} alt="" width={240} />
+    <h1>Oops! Page not found</h1>
+    <p>The page you are looking for doesn’t exist or has been moved. Please go back to the homepage.</p>
+    <a class="btn btn--primary btn--sm" href="/">Back To Home</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .notfound { display: grid; justify-items: center; gap: 20px; max-width: 640px; padding-block: 110px; text-align: center; }
+</style>

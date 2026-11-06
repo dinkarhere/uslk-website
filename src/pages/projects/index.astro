@@ -1,0 +1,37 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHero from "@/components/PageHero.astro";
+import ProjectCard from "@/components/ProjectCard.astro";
+import LoadMore from "@/components/LoadMore.astro";
+import heroImage from "@/assets/images/site/projects-hero.png";
+import { getProjects } from "@/lib/content";
+
+const projects = await getProjects();
+---
+
+<BaseLayout title="Projects" description="Water conservation, plantation and rural development projects by USLK Jal Foundation.">
+  <PageHero title="Cause List" image={heroImage} />
+  <section class="section">
+    <div class="container">
+      {
+        projects.length === 0 ? (
+          <p class="empty">New projects are on their way — check back soon.</p>
+        ) : (
+          <LoadMore pageSize={6} total={projects.length} itemsClass="grid-3 list">
+            {projects.map((p) => (
+              <div>
+                <ProjectCard project={p} variant="list" />
+              </div>
+            ))}
+          </LoadMore>
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .section { padding-block: 90px 110px; }
+  .list { align-items: start; }
+  .empty { text-align: center; }
+</style>

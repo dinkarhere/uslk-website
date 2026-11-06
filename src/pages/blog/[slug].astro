@@ -1,0 +1,68 @@
+---
+import type { GetStaticPaths } from "astro";
+import { Image } from "astro:assets";
+import { render } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ArticleShell from "@/components/ArticleShell.astro";
+import { formatDate, getPosts, postUrl, type Post } from "@/lib/content";
+
+export const getStaticPaths = (async () => {
+  const posts = await getPosts();
+  // Newest first, so "Next" goes to the older post — same order as the blog list.
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    props: { post, prev: posts[i - 1], next: posts[i + 1] },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  post: Post;
+  prev: Post | undefined;
+  next: Post | undefined;
+}
+
+const { post, prev, next } = Astro.props;
+const { data } = post;
+const { Content } = await render(post);
+---
+
+<BaseLayout title={data.title} description={data.excerpt} image={data.image} type="article">
+  <ArticleShell backHref="/blog" width="800">
+    <Image
+      src={data.image}
+      alt={data.imageAlt}
+      class="article__banner banner"
+      widths={[480, 800, 1600]}
+      sizes="(max-width: 840px) 100vw, 800px"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <header class="head">
+      <h1>{data.title}</h1>
+      <p class="meta">
+        {data.author && <span>{data.author} · </span>}
+        <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
+      </p>
+    </header>
+    <div class="prose"><Content /></div>
+
+    {
+      (prev || next) && (
+        <nav class="pager" aria-label="More posts">
+          {prev ? <a href={postUrl(prev)} rel="prev">&lt; Prev</a> : <span />}
+          {next && <a href={postUrl(next)} rel="next">Next &gt;</a>}
+        </nav>
+      )
+    }
+  </ArticleShell>
+</BaseLayout>
+
+<style>
+  .banner { height: 500px; }
+  .head { display: grid; gap: 15px; }
+  .meta { font-size: 14px; color: var(--color-body); }
+  .pager { display: flex; justify-content: space-between; gap: 16px; margin-top: 16px; }
+  .pager a { color: var(--color-red); }
+  .pager a:hover { text-decoration: underline; }
+  @media (max-width: 809px) { .banner { height: 260px; } }
+</style>

@@ -1,0 +1,51 @@
+---
+/**
+ * Progressive "Load More": every item is in the HTML (crawlable, works without
+ * JS). With JS, only `pageSize` items are shown and the button reveals more.
+ */
+interface Props {
+  pageSize: number;
+  total: number;
+  /** Classes for the element that directly wraps the items (e.g. a grid). */
+  itemsClass?: string;
+}
+const { pageSize, total, itemsClass } = Astro.props;
+---
+
+<div class="load-more" data-load-more data-page-size={pageSize}>
+  <div class:list={["load-more__items", itemsClass]} data-items><slot /></div>
+  {
+    total > pageSize && (
+      <div class="center mt-50">
+        <button type="button" class="btn btn--primary btn--sm" data-more hidden>
+          Load More
+        </button>
+      </div>
+    )
+  }
+  <p class="sr-only" aria-live="polite" data-status></p>
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>("[data-load-more]")) {
+    const size = Number(root.dataset.pageSize) || 6;
+    const items = Array.from(root.querySelector("[data-items]")?.children ?? []) as HTMLElement[];
+    const button = root.querySelector<HTMLButtonElement>("[data-more]");
+    const status = root.querySelector<HTMLElement>("[data-status]");
+    let shown = Math.min(size, items.length);
+
+    const render = () => {
+      items.forEach((el, i) => (el.hidden = i >= shown));
+      if (button) button.hidden = shown >= items.length;
+    };
+
+    button?.addEventListener("click", () => {
+      const first = shown;
+      shown = Math.min(shown + size, items.length);
+      render();
+      items[first]?.querySelector<HTMLAnchorElement>("a")?.focus();
+      if (status) status.textContent = `Showing ${shown} of ${items.length}`;
+    });
+    render();
+  }
+</script>
