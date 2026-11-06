@@ -1,0 +1,119 @@
+---
+/**
+ * Progressive-enhancement form shell posting to /api/forms.
+ * Without JS: normal POST + redirect back with ?form=sent|error.
+ * With JS: fetch + inline status and per-field errors, no page reload.
+ */
+interface Props {
+  form: "contact" | "donate";
+  submitLabel: string;
+  successMessage: string;
+  class?: string;
+}
+const { form, submitLabel, successMessage, class: className } = Astro.props;
+---
+
+<form
+  id="form"
+  class:list={["form", className]}
+  method="post"
+  action="/api/forms"
+  novalidate
+  data-site-form
+  data-success={successMessage}
+>
+  <input type="hidden" name="form" value={form} />
+  <input type="hidden" name="ts" value={String(Date.now())} data-ts />
+  <div class="hp" aria-hidden="true">
+    <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+  </div>
+
+  <slot />
+
+  <p class="form-status" role="status" aria-live="polite" hidden data-status></p>
+  <button type="submit" class="btn btn--red submit" data-submit>{submitLabel}</button>
+</form>
+
+<script>
+  type Result = { ok: boolean; message?: string; errors?: Record<string, string> };
+
+  for (const form of document.querySelectorAll<HTMLFormElement>("[data-site-form]")) {
+    const ts = form.querySelector<HTMLInputElement>("[data-ts]");
+    const status = form.querySelector<HTMLElement>("[data-status]")!;
+    const submit = form.querySelector<HTMLButtonElement>("[data-submit]")!;
+    const label = submit.textContent ?? "";
+    if (ts) ts.value = String(Date.now());
+
+    const showStatus = (kind: "success" | "error", text: string) => {
+      status.hidden = false;
+      status.className = `form-status form-status--${kind}`;
+      status.textContent = text;
+    };
+
+    const setFieldError = (name: string, message: string | undefined) => {
+      const input = form.elements.namedItem(name);
+      if (!(input instanceof HTMLElement)) return;
+      const errorId = `${form.id}-${name}-error`;
+      let el = document.getElementById(errorId);
+      if (message) {
+        input.setAttribute("aria-invalid", "true");
+        input.setAttribute("aria-describedby", errorId);
+        if (!el) {
+          el = document.createElement("p");
+          el.id = errorId;
+          el.className = "field__error";
+          input.closest(".field")?.append(el);
+        }
+        el.textContent = message;
+      } else {
+        input.removeAttribute("aria-invalid");
+        input.removeAttribute("aria-describedby");
+        el?.remove();
+      }
+    };
+
+    // No-JS fallback result, e.g. /contact?form=sent#form
+    const flag = new URLSearchParams(location.search).get("form");
+    if (flag === "sent") showStatus("success", form.dataset.success ?? "Thank you!");
+    if (flag === "error") showStatus("error", "Something went wrong. Please try again.");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      for (const el of Array.from(form.elements)) if ("name" in el && (el as HTMLInputElement).name) setFieldError((el as HTMLInputElement).name, undefined);
+
+      // Browser-native validation first (required, type=email, min…)
+      const invalid = Array.from(form.elements).filter(
+        (el): el is HTMLInputElement => el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement,
+      ).filter((el) => !el.checkValidity());
+      if (invalid.length) {
+        invalid.forEach((el) => setFieldError(el.name, el.validationMessage));
+        invalid[0]?.focus();
+        return;
+      }
+
+      submit.disabled = true;
+      submit.textContent = "Sending…";
+      try {
+        const res = await fetch(form.action, { method: "POST", body: new FormData(form), headers: { accept: "application/json" } });
+        const data = (await res.json().catch(() => ({ ok: false }))) as Result;
+        if (res.ok && data.ok) {
+          form.reset();
+          if (ts) ts.value = String(Date.now());
+          showStatus("success", form.dataset.success ?? "Thank you!");
+        } else {
+          Object.entries(data.errors ?? {}).forEach(([k, v]) => setFieldError(k, v));
+          showStatus("error", data.message ?? "Something went wrong. Please try again.");
+        }
+      } catch {
+        showStatus("error", "Network error. Please check your connection and try again.");
+      } finally {
+        submit.disabled = false;
+        submit.textContent = label;
+      }
+    });
+  }
+</script>
+
+<style>
+  .submit { justify-self: start; padding: 12px 24px; font-size: 16px; }
+</style>

@@ -1,0 +1,83 @@
+---
+import { Image } from "astro:assets";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHero from "@/components/PageHero.astro";
+import SiteForm from "@/components/SiteForm.astro";
+import heroImage from "@/assets/images/site/contact-hero.jpg";
+import officeImage from "@/assets/images/site/contact-office.webp";
+import { getSite, telHref } from "@/lib/content";
+
+const site = await getSite();
+const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(site.mapQuery || site.address)}&output=embed`;
+---
+
+<BaseLayout title="Contact" description={`Get in touch with ${site.name}. ${site.address}`}>
+  <PageHero title="Contact" image={heroImage} position="right center" />
+
+  <section class="section" aria-labelledby="contact-title">
+    <div class="container contact">
+      <div>
+        <h2 id="contact-title" class="contact__title">Get in touch</h2>
+        <SiteForm form="contact" submitLabel="Submit" successMessage="Thank you! Your message has been sent — we’ll get back to you soon.">
+          <div class="form__row">
+            <div class="field">
+              <label class="field__label" for="c-first">First Name*</label>
+              <input class="field__control" id="c-first" name="firstName" autocomplete="given-name" required maxlength="80" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="c-last">Last Name*</label>
+              <input class="field__control" id="c-last" name="lastName" autocomplete="family-name" required maxlength="80" />
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label" for="c-email">Email *</label>
+            <input class="field__control" id="c-email" name="email" type="email" autocomplete="email" required maxlength="254" />
+          </div>
+          <div class="field">
+            <label class="field__label" for="c-message">Message</label>
+            <textarea class="field__control" id="c-message" name="message" rows="4" maxlength="5000"></textarea>
+          </div>
+        </SiteForm>
+      </div>
+      <Image src={officeImage} alt="" class="contact__image" widths={[400, 540, 1080]} sizes="(max-width: 809px) 100vw, 540px" />
+    </div>
+  </section>
+
+  <section class="map" aria-label="Map">
+    <iframe
+      title={`Map showing ${site.officeName}`}
+      src={mapSrc}
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      allowfullscreen></iframe>
+  </section>
+
+  <section class="address" aria-labelledby="office-title">
+    <div class="container address__inner">
+      <h2 id="office-title">{site.officeName}</h2>
+      <p class="address__text">{site.address}</p>
+      <p class="address__text">
+        <a href={`mailto:${site.email}`}>{site.email}</a><br />
+        {site.phones[0] && <>Call : <a href={telHref(site.phones[0])}>{site.phones[0]}</a></>}
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 40px; align-items: start; }
+  .contact__title { margin-bottom: 30px; font-size: var(--h3); font-weight: 500; }
+  .contact__image { width: 100%; height: 100%; max-height: 400px; object-fit: cover; border-radius: var(--radius); }
+  .map iframe { display: block; width: 100%; height: 420px; border: 0; }
+  .address { padding-block: 60px; background: var(--color-primary); color: var(--color-white); }
+  .address__inner { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; align-items: center; }
+  .address h2 { color: var(--color-white); font-size: var(--h3); font-weight: 600; }
+  .address__text { font-size: var(--h5); line-height: 28px; font-weight: 600; }
+  .address a { color: var(--color-white); }
+  .address a:hover { text-decoration: underline; }
+  @media (max-width: 809px) {
+    .contact, .address__inner { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .contact__image { max-height: 280px; }
+    .map iframe { height: 320px; }
+  }
+</style>

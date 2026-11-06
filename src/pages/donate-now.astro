@@ -1,0 +1,72 @@
+---
+import { Image } from "astro:assets";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHero from "@/components/PageHero.astro";
+import SiteForm from "@/components/SiteForm.astro";
+import Icon from "@/components/Icon.astro";
+import heroImage from "@/assets/images/site/donate-hero.jpg";
+import sideImage from "@/assets/images/site/donate-side.jpg";
+import { getSite } from "@/lib/content";
+
+const site = await getSite();
+---
+
+<BaseLayout title="Donate Now" description={`Support ${site.name}'s water conservation and rural development work.`}>
+  <PageHero title="Donate Now" image={heroImage} />
+
+  <section class="section section--accent" aria-label="Donation form">
+    <div class="container donate">
+      <Image src={sideImage} alt="" class="donate__image" widths={[400, 500, 1000]} sizes="(max-width: 809px) 100vw, 500px" />
+      <div class="donate__card">
+        <SiteForm
+          form="donate"
+          submitLabel="Donate Now"
+          class="donate__form"
+          successMessage="Thank you for your pledge! Our team will contact you by email with payment details.">
+          <div class="form__row">
+            <div class="field">
+              <label class="field__label" for="d-first">First Name*</label>
+              <input class="field__control" id="d-first" name="firstName" autocomplete="given-name" required maxlength="80" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="d-last">Last Name*</label>
+              <input class="field__control" id="d-last" name="lastName" autocomplete="family-name" required maxlength="80" />
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label" for="d-email">Email *</label>
+            <input class="field__control" id="d-email" name="email" type="email" autocomplete="email" required maxlength="254" />
+          </div>
+          <div class="field">
+            <label class="field__label" for="d-cause">Select Causes *</label>
+            <select class="field__control" id="d-cause" name="cause" required>
+              <option value="">Select Causes</option>
+              {site.donationCauses.map((c) => <option value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="d-amount">Enter Donation Amount (₹) *</label>
+            <div class="amount">
+              <span class="amount__icon"><Icon name="rupee" size={18} /></span>
+              <input class="field__control" id="d-amount" name="amount" type="number" inputmode="numeric" min="1" step="1" required />
+            </div>
+          </div>
+        </SiteForm>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .donate { display: grid; grid-template-columns: minmax(0, 500px) minmax(0, 1fr); gap: 30px; align-items: start; }
+  .donate__image { width: 100%; height: 530px; object-fit: cover; border-radius: var(--radius); }
+  .donate__card { padding: 40px 32px 32px; background: var(--color-white); border-radius: var(--radius); }
+  .donate__card :global(.submit) { justify-self: stretch; }
+  .amount { display: flex; align-items: center; gap: 14px; }
+  .amount__icon { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); color: var(--color-white); }
+  @media (max-width: 809px) {
+    .donate { grid-template-columns: minmax(0, 1fr); }
+    .donate__image { height: 280px; }
+    .donate__card { padding: 24px 20px; }
+  }
+</style>
